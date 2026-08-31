@@ -1,1 +1,1 @@
-https://koosik-dev.github.io/MySqlCmd/#step2
+https://koosik-dev.github.io/MySqlCmd/
