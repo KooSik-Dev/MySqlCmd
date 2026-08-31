@@ -1195,9 +1195,200 @@
                 display: none !important;
             }
         }
+
+
+        /* =========================================================
+           LIVE AMBIENT BACKGROUND
+           IP 위치 -> 현지 시간 / 날씨 / 계절에 따라 10초마다 교체
+           ========================================================= */
+        html {
+            background: #101316;
+        }
+
+        body {
+            background: #101316 !important;
+            min-height: 100vh;
+        }
+
+        #ambient-bg {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            overflow: hidden;
+            pointer-events: none;
+            background:
+                radial-gradient(circle at 72% 18%, rgba(74, 99, 122, .22), transparent 42%),
+                #101316;
+        }
+
+        #ambient-bg .ambient-layer {
+            position: absolute;
+            inset: -28px;
+            z-index: 0;
+            background-position: center center;
+            background-repeat: no-repeat;
+            background-size: cover;
+            opacity: 0;
+            transform: scale(1.075);
+            filter: blur(5px) brightness(.80) saturate(.92) contrast(.98);
+            transition: opacity 2.8s cubic-bezier(.22, .7, .18, 1);
+            will-change: opacity, transform;
+        }
+
+        /* 현재 이미지는 끝까지 100% 유지하고, 다음 이미지만 그 위에서 서서히 섞입니다.
+           그래서 전환 중간에 검게 꺼지는 느낌이 생기지 않습니다. */
+        #ambient-bg .ambient-layer.is-active {
+            z-index: 1;
+            opacity: 1;
+            animation: ambientDrift 18s ease-in-out infinite alternate;
+        }
+
+        #ambient-bg .ambient-layer.is-incoming {
+            z-index: 2;
+            opacity: 1;
+            animation: ambientDrift 18s ease-in-out infinite alternate;
+        }
+
+        /* 첫 배경 한 번만 애니메이션 없이 즉시 표시 */
+        #ambient-bg .ambient-layer.is-first-paint {
+            transition: none !important;
+        }
+
+        #ambient-bg::before,
+        #ambient-bg::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            z-index: 4;
+            pointer-events: none;
+        }
+
+        /* 화면 전체를 살짝 눌러서 긴 문서도 눈이 덜 피곤하도록 */
+        #ambient-bg::before {
+            background:
+                linear-gradient(180deg,
+                    rgba(10, 13, 17, .24) 0%,
+                    rgba(12, 15, 18, .14) 28%,
+                    rgba(10, 12, 15, .28) 100%),
+                radial-gradient(circle at 50% 24%,
+                    rgba(255, 255, 255, .065),
+                    rgba(0, 0, 0, .08) 66%,
+                    rgba(0, 0, 0, .18) 100%);
+        }
+
+        /* 위/아래 톤을 이어 주는 아주 은은한 그라데이션 */
+        #ambient-bg::after {
+            background:
+                linear-gradient(120deg,
+                    rgba(26, 38, 49, .10),
+                    transparent 42%,
+                    rgba(44, 34, 32, .06));
+            mix-blend-mode: soft-light;
+        }
+
+        @keyframes ambientDrift {
+            0%   { transform: scale(1.075) translate3d(-.35%, -.15%, 0); }
+            100% { transform: scale(1.105) translate3d(.35%, .2%, 0); }
+        }
+
+        /* 배경 위에서도 본문은 선명하게 보이도록 반투명 카드 처리 */
+        .container {
+            position: relative;
+            z-index: 2;
+        }
+
+        .hero,
+        .section {
+            background: rgba(248, 248, 247, .80) !important;
+            border-color: rgba(205, 205, 201, .70) !important;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, .16);
+            -webkit-backdrop-filter: blur(7px) saturate(.96);
+            backdrop-filter: blur(7px) saturate(.96);
+        }
+
+        .toc {
+            background: rgba(247, 247, 245, .84) !important;
+            border-color: rgba(195, 195, 190, .72) !important;
+            box-shadow: 0 12px 30px rgba(0, 0, 0, .14);
+            -webkit-backdrop-filter: blur(7px) saturate(.95);
+            backdrop-filter: blur(7px) saturate(.95);
+        }
+
+        .shot-card {
+            background: rgba(248, 248, 247, .86) !important;
+        }
+
+        footer {
+            position: relative;
+            z-index: 2;
+            color: rgba(255, 255, 255, .74);
+            text-shadow: 0 1px 5px rgba(0, 0, 0, .55);
+        }
+
+        /* 작은 화면에서는 글자가 배경과 섞이지 않게 카드만 살짝 더 불투명하게 */
+        @media (max-width: 720px) {
+            .hero,
+            .section {
+                background: rgba(248, 248, 247, .86) !important;
+            }
+
+            .toc {
+                background: rgba(247, 247, 245, .90) !important;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            #ambient-bg .ambient-layer {
+                transition-duration: .001ms !important;
+                animation: none !important;
+            }
+        }
+
+
+        /* =========================================================
+           DESKTOP LAYOUT : 목차 + 본문을 하나의 덩어리로 화면 중앙 정렬
+           ========================================================= */
+        @media (min-width: 1321px) {
+            /*
+               전체 폭 = 238px(목차) + 30px(간격) + 980px(본문) = 1248px
+               이 전체 덩어리가 뷰포트 중앙에 오도록 각각의 위치를 계산합니다.
+            */
+            .container {
+                width: 980px;
+                max-width: 980px;
+                margin: 34px 0 60px;
+                margin-left: calc(50% - 356px);
+            }
+
+            .toc {
+                left: calc(50% - 624px);
+                width: 238px;
+            }
+        }
+
+        /* 1248px짜리 2열 레이아웃이 답답해지는 순간부터는 한 열로 중앙 정렬 */
+        @media (min-width: 981px) and (max-width: 1320px) {
+            .container {
+                width: min(920px, calc(100% - 56px));
+                margin: 28px auto 50px;
+            }
+
+            .toc {
+                position: static;
+                left: auto;
+                top: auto;
+                width: 100%;
+                max-height: none;
+                margin-bottom: 20px;
+            }
+        }
+
 </style>
 </head>
-<body><div id="scroll-progress"></div>
+<body><div id="ambient-bg" aria-hidden="true">
+<div class="ambient-layer is-active" data-bg-layer="0"></div>
+<div class="ambient-layer" data-bg-layer="1"></div>
+</div><div id="scroll-progress"></div>
 <div class="container">
 <div class="hero">
 <div class="hero-inner">
@@ -1861,6 +2052,264 @@ WHERE 학번 = 20260001;</pre>
                 triggerCopyFX(button);
             });
         });
+
+
+        // ---------------------------------------------------------
+        // LIVE AMBIENT BACKGROUND
+        // IP 위치를 기준으로 현지 시간 / 날씨 / 계절 테마를 만들고
+        // 10초마다 새 이미지를 미리 로드한 뒤 부드럽게 크로스페이드합니다.
+        // ---------------------------------------------------------
+        (() => {
+            const layers = [...document.querySelectorAll('#ambient-bg .ambient-layer')];
+            if (layers.length < 2) return;
+
+            const state = {
+                active: 0,
+                serial: Math.floor(Date.now() / 10000),
+                context: {
+                    latitude: null,
+                    longitude: null,
+                    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC',
+                    weather: 'clear',
+                    weatherCode: null,
+                    isDay: null,
+                    city: '',
+                    country: ''
+                }
+            };
+
+            const WEATHER_GROUPS = {
+                clear: new Set([0, 1]),
+                clouds: new Set([2, 3]),
+                fog: new Set([45, 48]),
+                drizzle: new Set([51, 53, 55, 56, 57]),
+                rain: new Set([61, 63, 65, 66, 67, 80, 81, 82]),
+                snow: new Set([71, 73, 75, 77, 85, 86]),
+                storm: new Set([95, 96, 99])
+            };
+
+            function fetchWithTimeout(url, timeout = 5500) {
+                const controller = new AbortController();
+                const timer = setTimeout(() => controller.abort(), timeout);
+                return fetch(url, {
+                    cache: 'no-store',
+                    signal: controller.signal
+                }).finally(() => clearTimeout(timer));
+            }
+
+            function weatherName(code) {
+                const numberCode = Number(code);
+                for (const [name, codes] of Object.entries(WEATHER_GROUPS)) {
+                    if (codes.has(numberCode)) return name;
+                }
+                return 'clouds';
+            }
+
+            function zonedParts(timezone) {
+                const parts = new Intl.DateTimeFormat('en-US', {
+                    timeZone: timezone,
+                    hour12: false,
+                    hour: '2-digit',
+                    month: 'numeric'
+                }).formatToParts(new Date());
+
+                const map = Object.fromEntries(parts.map(part => [part.type, part.value]));
+                return {
+                    hour: Number(map.hour) % 24,
+                    month: Number(map.month)
+                };
+            }
+
+            function getSeason(month, latitude) {
+                // 남반구는 계절을 6개월 반대로 계산합니다.
+                let adjustedMonth = month;
+                if (typeof latitude === 'number' && latitude < 0) {
+                    adjustedMonth = ((month + 5) % 12) + 1;
+                }
+
+                if ([3, 4, 5].includes(adjustedMonth)) return 'spring';
+                if ([6, 7, 8].includes(adjustedMonth)) return 'summer';
+                if ([9, 10, 11].includes(adjustedMonth)) return 'autumn';
+                return 'winter';
+            }
+
+            function getTimeBand(hour, apiIsDay) {
+                if (hour >= 5 && hour < 7) return 'dawn';
+                if (hour >= 7 && hour < 11) return 'morning';
+                if (hour >= 11 && hour < 17) return 'day';
+                if (hour >= 17 && hour < 20) return 'sunset';
+                if (apiIsDay === 1 && hour >= 6 && hour < 20) return 'day';
+                return 'night';
+            }
+
+            function cleanKeyword(value) {
+                return String(value || '')
+                    .toLowerCase()
+                    .replace(/[^a-z0-9-]+/g, '-')
+                    .replace(/^-+|-+$/g, '');
+            }
+
+            function buildImageUrl() {
+                const { timezone, latitude, weather, isDay } = state.context;
+                const { hour, month } = zonedParts(timezone);
+                const season = getSeason(month, latitude);
+                const timeBand = getTimeBand(hour, isDay);
+
+                // 자연 풍경 위주로 제한해서 문서 배경이 너무 산만해지지 않게 합니다.
+                const weatherKeyword = {
+                    clear: 'clear-sky',
+                    clouds: 'cloudy-sky',
+                    fog: 'mist-fog',
+                    drizzle: 'light-rain',
+                    rain: 'rain',
+                    snow: 'snow',
+                    storm: 'storm-clouds'
+                }[weather] || 'cloudy-sky';
+
+                const keywords = [
+                    cleanKeyword(season),
+                    cleanKeyword(timeBand),
+                    cleanKeyword(weatherKeyword),
+                    'nature',
+                    'landscape'
+                ].filter(Boolean).join(',');
+
+                state.serial += 1;
+                // lock 값만 바꾸면 같은 조건에서도 10초마다 다른 사진을 받습니다.
+                return `https://loremflickr.com/1920/1080/${keywords}?lock=${state.serial}`;
+            }
+
+            function preload(url) {
+                return new Promise((resolve, reject) => {
+                    const image = new Image();
+                    image.decoding = 'async';
+                    image.referrerPolicy = 'no-referrer';
+                    image.onload = () => resolve(url);
+                    image.onerror = reject;
+                    image.src = url;
+                });
+            }
+
+            const CROSSFADE_MS = 2800;
+            let transitionBusy = false;
+
+            async function showInitialBackground() {
+                const url = buildImageUrl();
+
+                try {
+                    await preload(url);
+                    const first = layers[state.active];
+                    first.classList.add('is-first-paint');
+                    first.style.backgroundImage = `url("${url}")`;
+                    first.classList.add('is-active');
+
+                    // 첫 화면만 페이드 없이 바로 보이게 하고,
+                    // 이후 교체부터 정상 크로스페이드 transition을 사용합니다.
+                    requestAnimationFrame(() => {
+                        requestAnimationFrame(() => {
+                            first.classList.remove('is-first-paint');
+                        });
+                    });
+                } catch (error) {
+                    console.debug('[ambient background] initial image load skipped:', error);
+                }
+            }
+
+            async function showNextBackground() {
+                if (transitionBusy) return;
+                transitionBusy = true;
+                const url = buildImageUrl();
+
+                try {
+                    await preload(url);
+                    const current = state.active;
+                    const next = current === 0 ? 1 : 0;
+                    const currentLayer = layers[current];
+                    const nextLayer = layers[next];
+
+                    nextLayer.classList.remove('is-active', 'is-incoming', 'is-first-paint');
+                    nextLayer.style.backgroundImage = `url("${url}")`;
+
+                    // 현재 이미지는 계속 100% 보이게 둡니다.
+                    // 다음 이미지만 그 위에 opacity 0 -> 1로 올라오므로 두 사진이 자연스럽게 섞입니다.
+                    requestAnimationFrame(() => {
+                        requestAnimationFrame(() => {
+                            nextLayer.classList.add('is-incoming');
+                        });
+                    });
+
+                    await new Promise(resolve => setTimeout(resolve, CROSSFADE_MS + 80));
+
+                    nextLayer.classList.remove('is-incoming');
+                    nextLayer.classList.add('is-active');
+                    currentLayer.classList.remove('is-active');
+                    state.active = next;
+                } catch (error) {
+                    // 이미지 공급자가 잠깐 실패하면 기존 배경을 그대로 유지합니다.
+                    console.debug('[ambient background] image load skipped:', error);
+                } finally {
+                    transitionBusy = false;
+                }
+            }
+
+            async function updateLocationAndWeather() {
+                try {
+                    const ipResponse = await fetchWithTimeout('https://ipwho.is/');
+                    const ipData = await ipResponse.json();
+
+                    if (ipData && ipData.success !== false) {
+                        state.context.latitude = Number(ipData.latitude);
+                        state.context.longitude = Number(ipData.longitude);
+                        state.context.city = ipData.city || '';
+                        state.context.country = ipData.country_code || ipData.country || '';
+                        state.context.timezone =
+                            (ipData.timezone && ipData.timezone.id)
+                            || state.context.timezone;
+                    }
+                } catch (error) {
+                    console.debug('[ambient background] IP location fallback:', error);
+                }
+
+                const { latitude, longitude, timezone } = state.context;
+                if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) return;
+
+                try {
+                    const weatherUrl = new URL('https://api.open-meteo.com/v1/forecast');
+                    weatherUrl.searchParams.set('latitude', latitude);
+                    weatherUrl.searchParams.set('longitude', longitude);
+                    weatherUrl.searchParams.set('current', 'weather_code,is_day,temperature_2m');
+                    weatherUrl.searchParams.set('timezone', timezone || 'auto');
+
+                    const weatherResponse = await fetchWithTimeout(weatherUrl.toString());
+                    const weatherData = await weatherResponse.json();
+                    const current = weatherData && weatherData.current;
+
+                    if (current) {
+                        state.context.weatherCode = Number(current.weather_code);
+                        state.context.weather = weatherName(current.weather_code);
+                        state.context.isDay = Number(current.is_day);
+                    }
+                } catch (error) {
+                    console.debug('[ambient background] weather fallback:', error);
+                }
+            }
+
+            async function startAmbientBackground() {
+                // 첫 배경만 애니메이션 없이 즉시 표시합니다.
+                await showInitialBackground();
+
+                // 위치/날씨는 조용히 갱신하고, 첫 접속 직후 사진을 또 바꾸지는 않습니다.
+                // 다음 10초 주기부터 최신 위치/시간/날씨 조건으로 자연스럽게 섞여 바뀝니다.
+                updateLocationAndWeather();
+
+                setInterval(showNextBackground, 10000);
+                // 위치/날씨는 사진처럼 자주 바꿀 필요가 없으므로 15분마다 갱신합니다.
+                setInterval(updateLocationAndWeather, 15 * 60 * 1000);
+            }
+
+            startAmbientBackground();
+        })();
+
 </script>
 <button aria-label="맨 위로 이동" id="back-to-top" type="button">TOP ↑</button></body>
 </html>
